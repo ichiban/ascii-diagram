@@ -1,0 +1,354 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<!--
+`ascii-diagram`
+ascii diagram tag
+
+@demo demo/index.html 
+-->
+
+<dom-module id="ascii-diagram">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      :host pre {
+        display: none;
+      }
+    </style>
+    <pre id="src"><content></content></pre>
+    <svg id="dst">
+      <defs>
+	<marker id="arrow" markerWidth="13" markerHeight="13" refX="2" refY="6" orient="auto">
+          <path d="M2,2 L2,11 L10,6 L2,2" fill="#000" />
+	</marker>
+      </defs>
+    </svg>
+  </template>
+
+  <script>
+    Polymer({
+      
+      is: 'ascii-diagram',
+      
+      properties: {
+      },
+
+      ready: function() {
+	var src = this.$.src;
+	var dst = this.$.dst;
+	
+	var spec = unescape(src.innerHTML)
+	console.log(spec);
+	
+	var cells = parse(spec);
+	console.log(cells);
+
+	var cell = function(x, y) {
+	  if (cells[y] === void 0) {
+	    return null;
+	  }
+
+	  if (cells[y][x] === void 0) {
+	    return null;
+	  }
+
+	  return cells[y][x]
+	};
+
+	var edges = [];
+	var chars = [];
+	cells.forEach(function(row, y) {
+	  row.forEach(function(c, x) {
+	    switch (c) {
+	    case ' ':
+	      break;
+	    case '-':
+	      var raw = true;
+	      
+	      switch (cell(x - 1, y)) {
+	      case '-':
+	      case '+':
+	      case '<':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x, y: 2 * y + 1},
+		  to: {x: 2 * x + 2, y: 2 * y + 1}
+		});
+		break;
+	      }
+	      
+	      switch (cell(x + 1, y)) {
+	      case '-':
+	      case '+':
+	      case '>':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x, y: 2 * y + 1},
+		  to: {x: 2 * x + 2, y: 2 * y + 1}
+		});
+		break;
+	      }
+
+	      if (raw) {
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+	      
+	      break;
+	    case '|':
+	      var raw = true;
+
+	      switch (cell(x, y - 1)) {
+	      case '|':
+	      case '+':
+	      case '^':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y},
+		  to: {x: 2 * x + 1, y: 2 * y + 2}
+		});
+		break;
+	      }
+
+	      switch (cell(x, y + 1)) {
+	      case '|':
+	      case '+':
+	      case 'v':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y},
+		  to: {x: 2 * x + 1, y: 2 * y + 2}
+		});
+		break;
+	      }
+	      
+	      if (raw) {
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+	      
+	      break;
+	    case '+':
+	      var raw = true;
+	      
+	      switch (cell(x, y - 1)) {
+	      case '|':
+	      case '+':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y},
+		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		});
+		break;
+	      }
+
+	      switch (cell(x, y + 1)) {
+	      case '|':
+	      case '+':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y + 1},
+		  to: {x: 2 * x + 1, y: 2 * y + 2}
+		});
+		break;
+	      }
+
+	      switch (cell(x - 1, y)) {
+	      case '-':
+	      case '+':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x, y: 2 * y + 1},
+		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		});
+		break;
+	      }
+	      
+	      switch (cell(x + 1, y)) {
+	      case '-':
+	      case '+':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y + 1},
+		  to: {x: 2 * x + 2, y: 2 * y + 1}
+		});
+		break;
+	      }
+
+	      if (raw) {
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+	      
+	      break;
+	    case '>':
+	      switch (cell(x - 1, y)) {
+	      case '-':
+	      case '+':
+		edges.push({
+		  from: {x: 2 * x, y: 2 * y + 1},
+		  to: {x: 2 * x + 1, y: 2 * y + 1, marker: 'arrow'}
+		});
+		break;
+	      default:
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+	      break;
+	    case '<':
+	      switch (cell(x + 1, y)) {
+	      case '-':
+	      case '+':
+		edges.push({
+		  from: {x: 2 * x + 2, y: 2 * y + 1},
+		  to: {x: 2 * x + 1, y: 2 * y + 1, marker: 'arrow'}
+		});
+		break;
+	      default:
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+	      break;
+	    case '^':
+	      switch (cell(x, y + 1)) {
+	      case '|':
+	      case '+':
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y + 2},
+		  to: {x: 2 * x + 1, y: 2 * y + 1, marker: 'arrow'},
+		});
+		break;
+	      default:
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+	      break;
+	    case 'v':
+	      switch (cell(x, y - 1)) {
+	      case '|':
+	      case '+':
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y},
+		  to: {x: 2 * x + 1, y: 2 * y + 1, marker: 'arrow'},
+		});
+		break;
+	      default:
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+	      break;
+	    default:
+	      chars.push({c: c, x: 2 * x, y: 2 * y});
+	    }
+	  });
+	});
+	console.log(edges);
+
+	edges.forEach(function(edge, i){
+	  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+	  
+	  path.setAttributeNS(null, 'd', [
+	    'M',
+	    4 * edge.from.x,
+	    4 * edge.from.y,
+	    4 * edge.to.x,
+	    4 * edge.to.y
+	  ].join(' '));
+	  path.setAttributeNS(null, 'stroke', 'black');
+	  path.setAttributeNS(null, 'stroke-width', 1);
+	  path.setAttributeNS(null, 'opacity', 1);
+	  path.setAttributeNS(null, 'fill', 'none');
+	  
+	  if (!!edge.to.marker) {
+	    path.setAttributeNS(null, 'marker-end', 'url(#'+edge.to.marker+')');
+	    console.log(path);
+	  }
+
+	  dst.appendChild(path);
+	});
+
+	chars.forEach(function(c, i) {
+	  var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+
+	  text.setAttributeNS(null, 'x', 4 * c.x);
+	  text.setAttributeNS(null, 'y', 4 * c.y + 8);
+	  text.setAttributeNS(null, 'font-family', 'monospace');
+	  text.setAttributeNS(null, 'font-size', 14);
+	  text.textContent = c.c;
+
+	  dst.appendChild(text);
+	});
+      },
+      
+    });
+
+    function parse(str) {
+      var cells = [[]];
+      var width = 0;
+      for (var i = 0; i < str.length; i++) {
+	if ((chr = getWholeChar(str, i)) === false) {
+	  continue;
+	}
+	
+	if (chr === '\n') {
+	  var len = cells[cells.length - 1].length;
+	  if (len > width) {
+	    width = len;
+	  }
+	  cells.push([]);
+	  continue;
+	}
+	
+	cells[cells.length - 1].push(chr);
+      }
+      for (var i = 0; i < cells.length; i++) {
+	var d = width - cells[i].length;
+	for (var j = 0; j < d; j++) {
+	  cells[i].push(' ');
+	}
+      }
+      return cells;
+    }
+
+    function unescape(raw) {
+      return raw
+	.replace(/&lt;/g,"<")
+	.replace(/&gt;/g,">")
+    }
+
+    // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/charAt#Getting_whole_characters
+    function getWholeChar(str, i) {
+      var code = str.charCodeAt(i);
+      
+      if (Number.isNaN(code)) {
+	return ''; // Position not found
+      }
+      if (code < 0xD800 || code > 0xDFFF) {
+	return str.charAt(i);
+      }
+      
+      // High surrogate (could change last hex to 0xDB7F to treat high private
+      // surrogates as single characters)
+      if (0xD800 <= code && code <= 0xDBFF) {
+	if (str.length <= (i + 1)) {
+	  throw 'High surrogate without following low surrogate';
+	}
+	var next = str.charCodeAt(i + 1);
+	if (0xDC00 > next || next > 0xDFFF) {
+          throw 'High surrogate without following low surrogate';
+	}
+	return str.charAt(i) + str.charAt(i + 1);
+      }
+      // Low surrogate (0xDC00 <= code && code <= 0xDFFF)
+      if (i === 0) {
+	throw 'Low surrogate without preceding high surrogate';
+      }
+      var prev = str.charCodeAt(i - 1);
+      
+      // (could change last hex to 0xDB7F to treat high private
+      // surrogates as single characters)
+      if (0xD800 > prev || prev > 0xDBFF) {
+	throw 'Low surrogate without preceding high surrogate';
+      }
+      // We can pass over low surrogates now as the second component
+      // in a pair which we have already processed
+      return false;
+    }
+  </script>
+</dom-module>
