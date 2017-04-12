@@ -39,12 +39,8 @@ ascii diagram tag
       ready: function() {
 	var src = this.$.src;
 	var dst = this.$.dst;
-	
 	var spec = unescape(src.innerHTML)
-	console.log(spec);
-	
 	var cells = parse(spec);
-	console.log(cells);
 
 	var cell = function(x, y) {
 	  if (cells[y] === void 0) {
@@ -63,8 +59,6 @@ ascii diagram tag
 	cells.forEach(function(row, y) {
 	  row.forEach(function(c, x) {
 	    switch (c) {
-	    case ' ':
-	      break;
 	    case '-':
 	      var raw = true;
 	      
@@ -115,6 +109,7 @@ ascii diagram tag
 	      switch (cell(x, y + 1)) {
 	      case '|':
 	      case '+':
+	      case '*':
 	      case 'v':
 		raw = false;
 		edges.push({
@@ -129,12 +124,73 @@ ascii diagram tag
 	      }
 	      
 	      break;
+	    case '/':
+	      var raw = true;
+
+	      switch (cell(x + 1, y - 1)) {
+	      case '/':
+	      case '+':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 2, y: 2 * y},
+		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		});
+		break;
+	      }
+
+	      switch (cell(x - 1, y + 1)) {
+	      case '/':
+	      case '+':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y + 1},
+		  to: {x: 2 * x, y: 2 * y + 2}
+		});
+		break;
+	      }
+
+	      if (raw) {
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+
+	      break;
+	    case '\\':
+	      var raw = true;
+
+	      switch (cell(x - 1, y - 1)) {
+	      case '\\':
+	      case '+':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x, y: 2 * y},
+		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		});
+		break;
+	      }
+
+	      switch (cell(x + 1, y + 1)) {
+	      case '\\':
+	      case '+':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y + 1},
+		  to: {x: 2 * x + 2, y: 2 * y + 2}
+		});
+		break;
+	      }
+
+	      if (raw) {
+		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      }
+
+	      break;
 	    case '+':
 	      var raw = true;
 	      
 	      switch (cell(x, y - 1)) {
 	      case '|':
 	      case '+':
+	      case '^':
 		raw = false;
 		edges.push({
 		  from: {x: 2 * x + 1, y: 2 * y},
@@ -146,6 +202,7 @@ ascii diagram tag
 	      switch (cell(x, y + 1)) {
 	      case '|':
 	      case '+':
+	      case 'v':
 		raw = false;
 		edges.push({
 		  from: {x: 2 * x + 1, y: 2 * y + 1},
@@ -157,6 +214,7 @@ ascii diagram tag
 	      switch (cell(x - 1, y)) {
 	      case '-':
 	      case '+':
+	      case '<':
 		raw = false;
 		edges.push({
 		  from: {x: 2 * x, y: 2 * y + 1},
@@ -168,6 +226,7 @@ ascii diagram tag
 	      switch (cell(x + 1, y)) {
 	      case '-':
 	      case '+':
+	      case '>':
 		raw = false;
 		edges.push({
 		  from: {x: 2 * x + 1, y: 2 * y + 1},
@@ -176,10 +235,50 @@ ascii diagram tag
 		break;
 	      }
 
+	      switch (cell(x + 1, y - 1)) {
+	      case '/':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 2, y: 2 * y},
+		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		});
+		break;
+	      }
+
+	      switch (cell(x - 1, y + 1)) {
+	      case '/':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y + 1},
+		  to: {x: 2 * x, y: 2 * y + 2}
+		});
+		break;
+	      }
+
+	      switch (cell(x - 1, y - 1)) {
+	      case '\\':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x, y: 2 * y},
+		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		});
+		break;
+	      }
+
+	      switch (cell(x + 1, y + 1)) {
+	      case '\\':
+		raw = false;
+		edges.push({
+		  from: {x: 2 * x + 1, y: 2 * y + 1},
+		  to: {x: 2 * x + 2, y: 2 * y + 2}
+		});
+		break;
+	      }
+
 	      if (raw) {
 		chars.push({c: c, x: 2 * x, y: 2 * y});
 	      }
-	      
+
 	      break;
 	    case '>':
 	      switch (cell(x - 1, y)) {
@@ -238,7 +337,9 @@ ascii diagram tag
 	    }
 	  });
 	});
-	console.log(edges);
+
+	dst.style.height = 8 * cells.length + 'px';
+	dst.style.width = 8 * cells[0].length + 'px';
 
 	edges.forEach(function(edge, i){
 	  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -257,7 +358,6 @@ ascii diagram tag
 	  
 	  if (!!edge.to.marker) {
 	    path.setAttributeNS(null, 'marker-end', 'url(#'+edge.to.marker+')');
-	    console.log(path);
 	  }
 
 	  dst.appendChild(path);
