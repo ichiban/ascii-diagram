@@ -73,6 +73,10 @@ ascii diagram tag
 		});
 		break;
 	      }
+
+	      if (!raw) {
+		break;
+	      }
 	      
 	      switch (cell(x + 1, y)) {
 	      case '-':
@@ -86,10 +90,11 @@ ascii diagram tag
 		break;
 	      }
 
-	      if (raw) {
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      if (!raw) {
+		break;
 	      }
 	      
+	      chars.push({c: c, x: 2 * x, y: 2 * y});
 	      break;
 	    case '|':
 	      var raw = true;
@@ -106,6 +111,10 @@ ascii diagram tag
 		break;
 	      }
 
+	      if (!raw) {
+		break;
+	      }
+
 	      switch (cell(x, y + 1)) {
 	      case '|':
 	      case '+':
@@ -119,10 +128,11 @@ ascii diagram tag
 		break;
 	      }
 	      
-	      if (raw) {
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      if (!raw) {
+		break;
 	      }
-	      
+
+	      chars.push({c: c, x: 2 * x, y: 2 * y});
 	      break;
 	    case '/':
 	      var raw = true;
@@ -149,10 +159,11 @@ ascii diagram tag
 		break;
 	      }
 
-	      if (raw) {
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      if (!raw) {
+		break;
 	      }
 
+	      chars.push({c: c, x: 2 * x, y: 2 * y});
 	      break;
 	    case '\\':
 	      var raw = true;
@@ -179,10 +190,11 @@ ascii diagram tag
 		break;
 	      }
 
-	      if (raw) {
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+	      if (!raw) {
+		break;
 	      }
 
+	      chars.push({c: c, x: 2 * x, y: 2 * y});
 	      break;
 	    case '+':
 	      var raw = true;
@@ -341,23 +353,27 @@ ascii diagram tag
 	dst.style.height = 8 * cells.length + 'px';
 	dst.style.width = 8 * cells[0].length + 'px';
 
-	edges.forEach(function(edge, i){
+	var ls = lines(edges);
+	console.log('edges ' + edges.length);
+	console.log('lines ' + ls.length);
+
+	ls.forEach(function(line, i) {
 	  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-	  
-	  path.setAttributeNS(null, 'd', [
-	    'M',
-	    4 * edge.from.x,
-	    4 * edge.from.y,
-	    4 * edge.to.x,
-	    4 * edge.to.y
-	  ].join(' '));
+
+	  var d = ['M'];
+	  line.forEach(function(point) {
+	    d.push(4 * point.x);
+	    d.push(4 * point.y);
+	  });
+	  path.setAttributeNS(null, 'd', d.join(' '));
 	  path.setAttributeNS(null, 'stroke', 'black');
 	  path.setAttributeNS(null, 'stroke-width', 1);
 	  path.setAttributeNS(null, 'opacity', 1);
 	  path.setAttributeNS(null, 'fill', 'none');
-	  
-	  if (!!edge.to.marker) {
-	    path.setAttributeNS(null, 'marker-end', 'url(#'+edge.to.marker+')');
+
+	  var last = line[line.length - 1];
+	  if (!!last.marker) {
+	    path.setAttributeNS(null, 'marker-end', 'url(#'+last.marker+')');
 	  }
 
 	  dst.appendChild(path);
@@ -410,6 +426,69 @@ ascii diagram tag
       return raw
 	.replace(/&lt;/g,"<")
 	.replace(/&gt;/g,">")
+    }
+
+    function lines(edges) {
+      var heads = {};
+      var tails = {};
+
+      var key = function(point) {
+	return [point.x, point.y].join(':');
+      };
+
+      edges.forEach(function(edge, i) {
+	var line = (tails[key(edge.from)] || [])[0];
+	if (!!line) {
+	  tails[key(edge.from)].shift();
+	  line.push(edge.to);
+	  if (!!tails[key(edge.to)]) {
+	    tails[key(edge.to)].push(line);
+	  } else {
+	    tails[key(edge.to)] = [line];
+	  }
+	  return;
+	}
+
+	var line = (heads[key(edge.to)] || [])[0];
+	if (!!line) {
+	  heads[key(edge.to)].shift();
+	  line.unshift(edge.from);
+	  if (!!heads[key(edge.from)]) {
+	    heads[key(edge.from)].push(line);
+	  } else {
+	    heads[key(edge.from)] = [line];
+	  }
+	  return;
+	}
+
+	var line = [edge.from, edge.to];
+	if (!!heads[key(edge.from)]) {
+	  heads[key(edge.from)].push(line);
+	} else {
+	  heads[key(edge.from)] = [line];
+	}
+	if (!!tails[key(edge.to)]) {
+	  tails[key(edge.to)].push(line);
+	} else {
+	  tails[key(edge.to)] = [line];
+	}
+      });
+
+      var lines = [];
+      Object.keys(heads).forEach(function(key) {
+	heads[key].forEach(function(line) {
+	  lines.push(line);
+	});
+      });
+      Object.keys(tails).forEach(function(key) {
+	tails[key].forEach(function(line) {
+	  lines.push(line);
+	});
+      });
+
+      return lines.filter(function(x, i, self) {
+	return self.indexOf(x) === i;
+      });
     }
 
     // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/charAt#Getting_whole_characters
