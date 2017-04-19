@@ -54,7 +54,7 @@ ascii diagram tag
 	  return cells[y][x]
 	};
 
-	var edges = [];
+	var lines = [];
 	var chars = [];
 	cells.forEach(function(row, y) {
 	  row.forEach(function(c, x) {
@@ -70,9 +70,11 @@ ascii diagram tag
 	      case '+':
 	      case '<':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x, y: 2 * y + 1},
-		  to: {x: 2 * x + 2, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x, y: 2 * y + 1},
+		    {x: 2 * x + 2, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -86,9 +88,11 @@ ascii diagram tag
 	      case '+':
 	      case '>':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x, y: 2 * y + 1},
-		  to: {x: 2 * x + 2, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x, y: 2 * y + 1},
+		    {x: 2 * x + 2, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -107,9 +111,11 @@ ascii diagram tag
 	      case '+':
 	      case '^':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y},
-		  to: {x: 2 * x + 1, y: 2 * y + 2}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y},
+		    {x: 2 * x + 1, y: 2 * y + 2}
+		  ]
 		});
 		break;
 	      }
@@ -124,9 +130,11 @@ ascii diagram tag
 	      case '*':
 	      case 'v':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y},
-		  to: {x: 2 * x + 1, y: 2 * y + 2}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y},
+		    {x: 2 * x + 1, y: 2 * y + 2}
+		  ]
 		});
 		break;
 	      }
@@ -144,9 +152,11 @@ ascii diagram tag
 	      case '/':
 	      case '+':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 2, y: 2 * y},
-		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 2, y: 2 * y},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -155,9 +165,11 @@ ascii diagram tag
 	      case '/':
 	      case '+':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y + 1},
-		  to: {x: 2 * x, y: 2 * y + 2}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y + 1},
+		    {x: 2 * x, y: 2 * y + 2}
+		  ]
 		});
 		break;
 	      }
@@ -175,9 +187,11 @@ ascii diagram tag
 	      case '\\':
 	      case '+':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x, y: 2 * y},
-		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x, y: 2 * y},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -186,9 +200,11 @@ ascii diagram tag
 	      case '\\':
 	      case '+':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y + 1},
-		  to: {x: 2 * x + 2, y: 2 * y + 2}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y + 1},
+		    {x: 2 * x + 2, y: 2 * y + 2}
+		  ]
 		});
 		break;
 	      }
@@ -207,9 +223,11 @@ ascii diagram tag
 	      case '+':
 	      case '^':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y},
-		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -219,9 +237,11 @@ ascii diagram tag
 	      case '+':
 	      case 'v':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y + 1},
-		  to: {x: 2 * x + 1, y: 2 * y + 2}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y + 1},
+		    {x: 2 * x + 1, y: 2 * y + 2}
+		  ]
 		});
 		break;
 	      }
@@ -231,9 +251,11 @@ ascii diagram tag
 	      case '+':
 	      case '<':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x, y: 2 * y + 1},
-		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x, y: 2 * y + 1},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -243,9 +265,11 @@ ascii diagram tag
 	      case '+':
 	      case '>':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y + 1},
-		  to: {x: 2 * x + 2, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y + 1},
+		    {x: 2 * x + 2, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -253,9 +277,11 @@ ascii diagram tag
 	      switch (cell(x + 1, y - 1)) {
 	      case '/':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 2, y: 2 * y},
-		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 2, y: 2 * y},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -263,9 +289,11 @@ ascii diagram tag
 	      switch (cell(x - 1, y + 1)) {
 	      case '/':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y + 1},
-		  to: {x: 2 * x, y: 2 * y + 2}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y + 1},
+		    {x: 2 * x, y: 2 * y + 2}
+		  ]
 		});
 		break;
 	      }
@@ -273,9 +301,11 @@ ascii diagram tag
 	      switch (cell(x - 1, y - 1)) {
 	      case '\\':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x, y: 2 * y},
-		  to: {x: 2 * x + 1, y: 2 * y + 1}
+		lines.push({
+		  points: [
+		    {x: 2 * x, y: 2 * y},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ]
 		});
 		break;
 	      }
@@ -283,9 +313,11 @@ ascii diagram tag
 	      switch (cell(x + 1, y + 1)) {
 	      case '\\':
 		raw = false;
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y + 1},
-		  to: {x: 2 * x + 2, y: 2 * y + 2}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y + 1},
+		    {x: 2 * x + 2, y: 2 * y + 2}
+		  ]
 		});
 		break;
 	      }
@@ -299,9 +331,12 @@ ascii diagram tag
 	      switch (cell(x - 1, y)) {
 	      case '-':
 	      case '+':
-		edges.push({
-		  from: {x: 2 * x, y: 2 * y + 1},
-		  to: {x: 2 * x + 1, y: 2 * y + 1, marker: 'arrow'}
+		lines.push({
+		  points: [
+		    {x: 2 * x, y: 2 * y + 1},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ],
+		  markerEnd: 'arrow'
 		});
 		break;
 	      default:
@@ -312,9 +347,12 @@ ascii diagram tag
 	      switch (cell(x + 1, y)) {
 	      case '-':
 	      case '+':
-		edges.push({
-		  from: {x: 2 * x + 2, y: 2 * y + 1},
-		  to: {x: 2 * x + 1, y: 2 * y + 1, marker: 'arrow'}
+		lines.push({
+		  points: [
+		    {x: 2 * x + 2, y: 2 * y + 1},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ],
+		  markerEnd: 'arrow'
 		});
 		break;
 	      default:
@@ -325,9 +363,12 @@ ascii diagram tag
 	      switch (cell(x, y + 1)) {
 	      case '|':
 	      case '+':
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y + 2},
-		  to: {x: 2 * x + 1, y: 2 * y + 1, marker: 'arrow'},
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y + 2},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ],
+		  markerEnd: 'arrow'
 		});
 		break;
 	      default:
@@ -338,9 +379,12 @@ ascii diagram tag
 	      switch (cell(x, y - 1)) {
 	      case '|':
 	      case '+':
-		edges.push({
-		  from: {x: 2 * x + 1, y: 2 * y},
-		  to: {x: 2 * x + 1, y: 2 * y + 1, marker: 'arrow'},
+		lines.push({
+		  points: [
+		    {x: 2 * x + 1, y: 2 * y},
+		    {x: 2 * x + 1, y: 2 * y + 1}
+		  ],
+		  markerEnd: 'arrow'
 		});
 		break;
 	      default:
@@ -356,15 +400,15 @@ ascii diagram tag
 	dst.style.height = 8 * cells.length + 'px';
 	dst.style.width = 8 * cells[0].length + 'px';
 
-	var ls = lines(edges);
-	console.log('edges ' + edges.length);
-	console.log('lines ' + ls.length);
+	console.log('before combine: ' + lines.length);
+	var lines = combine(lines);
+	console.log('after combine: ' + lines.length);
 
-	ls.forEach(function(line, i) {
+	lines.forEach(function(line, i) {
 	  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
 	  var d = ['M'];
-	  line.forEach(function(point) {
+	  line.points.forEach(function(point) {
 	    d.push(4 * point.x);
 	    d.push(4 * point.y);
 	  });
@@ -374,9 +418,8 @@ ascii diagram tag
 	  path.setAttributeNS(null, 'opacity', 1);
 	  path.setAttributeNS(null, 'fill', 'none');
 
-	  var last = line[line.length - 1];
-	  if (!!last.marker) {
-	    path.setAttributeNS(null, 'marker-end', 'url(#'+last.marker+')');
+	  if (!!line.markerEnd) {
+	    path.setAttributeNS(null, 'marker-end', 'url(#'+line.markerEnd+')');
 	  }
 
 	  dst.appendChild(path);
@@ -431,7 +474,7 @@ ascii diagram tag
 	.replace(/&gt;/g,">")
     }
 
-    function lines(edges) {
+    function combine(lines) {
       var heads = {};
       var tails = {};
 
@@ -439,41 +482,61 @@ ascii diagram tag
 	return [point.x, point.y].join(':');
       };
 
-      edges.forEach(function(edge, i) {
-	var line = (tails[key(edge.from)] || [])[0];
+      lines.forEach(function(line, i) {
+	var points = line.points;
+	var markerEnd = line.markerEnd;
+	var headKey = key(points[0]);
+	var tailKey = key(points[points.length - 1]);
+
+	var lines = tails[headKey] || [];
+	var line = lines[0];
 	if (!!line) {
-	  tails[key(edge.from)].shift();
-	  line.push(edge.to);
-	  if (!!tails[key(edge.to)]) {
-	    tails[key(edge.to)].push(line);
+	  lines.shift();
+	  for (var i = 1; i < points.length; i++) {
+	    line.points.push(points[i]);
+	  }
+	  if (!!markerEnd) {
+	    line.markerEnd = markerEnd;
+	  }
+	  if (!!tails[tailKey]) {
+	    tails[tailKey].push(line);
 	  } else {
-	    tails[key(edge.to)] = [line];
+	    tails[tailKey] = [line];
 	  }
 	  return;
 	}
 
-	var line = (heads[key(edge.to)] || [])[0];
+	var lines = heads[tailKey] || [];
+	var line = lines[0];
 	if (!!line) {
-	  heads[key(edge.to)].shift();
-	  line.unshift(edge.from);
-	  if (!!heads[key(edge.from)]) {
-	    heads[key(edge.from)].push(line);
+	  lines.shift();
+	  for (var i = 0; i < points.length - 1; i++) {
+	    line.unshift(points[i]);
+	  }
+	  if (!!markerEnd) {
+	    line.markerEnd = markerEnd;
+	  }
+	  if (!!heads[headKey]) {
+	    heads[headKey].push(line);
 	  } else {
-	    heads[key(edge.from)] = [line];
+	    heads[headKey] = [line];
 	  }
 	  return;
 	}
 
-	var line = [edge.from, edge.to];
-	if (!!heads[key(edge.from)]) {
-	  heads[key(edge.from)].push(line);
+	var line = {
+	  points: points,
+	  markerEnd: markerEnd
+	};
+	if (!!heads[headKey]) {
+	  heads[headKey].push(line);
 	} else {
-	  heads[key(edge.from)] = [line];
+	  heads[headKey] = [line];
 	}
-	if (!!tails[key(edge.to)]) {
-	  tails[key(edge.to)].push(line);
+	if (!!tails[tailKey]) {
+	  tails[tailKey].push(line);
 	} else {
-	  tails[key(edge.to)] = [line];
+	  tails[tailKey] = [line];
 	}
       });
 
