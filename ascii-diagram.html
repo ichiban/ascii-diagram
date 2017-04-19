@@ -59,6 +59,9 @@ ascii diagram tag
 	cells.forEach(function(row, y) {
 	  row.forEach(function(c, x) {
 	    switch (c) {
+	    case ' ':
+	    case '\t':
+	      break;
 	    case '-':
 	      var raw = true;
 	      
