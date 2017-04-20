@@ -55,7 +55,7 @@ ascii diagram tag
 	};
 
 	var lines = [];
-	var chars = [];
+	var texts = [];
 	cells.forEach(function(row, y) {
 	  row.forEach(function(c, x) {
 	    switch (c) {
@@ -101,7 +101,7 @@ ascii diagram tag
 		break;
 	      }
 	      
-	      chars.push({c: c, x: 2 * x, y: 2 * y});
+	      texts.push({body: c, x: 2 * x, y: 2 * y});
 	      break;
 	    case '|':
 	      var raw = true;
@@ -143,7 +143,7 @@ ascii diagram tag
 		break;
 	      }
 
-	      chars.push({c: c, x: 2 * x, y: 2 * y});
+	      texts.push({body: c, x: 2 * x, y: 2 * y});
 	      break;
 	    case '/':
 	      var raw = true;
@@ -178,7 +178,7 @@ ascii diagram tag
 		break;
 	      }
 
-	      chars.push({c: c, x: 2 * x, y: 2 * y});
+	      texts.push({body: c, x: 2 * x, y: 2 * y});
 	      break;
 	    case '\\':
 	      var raw = true;
@@ -213,7 +213,7 @@ ascii diagram tag
 		break;
 	      }
 
-	      chars.push({c: c, x: 2 * x, y: 2 * y});
+	      texts.push({body: c, x: 2 * x, y: 2 * y});
 	      break;
 	    case '+':
 	      var raw = true;
@@ -323,7 +323,7 @@ ascii diagram tag
 	      }
 
 	      if (raw) {
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+		texts.push({body: c, x: 2 * x, y: 2 * y});
 	      }
 
 	      break;
@@ -340,7 +340,7 @@ ascii diagram tag
 		});
 		break;
 	      default:
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+		texts.push({body: c, x: 2 * x, y: 2 * y});
 	      }
 	      break;
 	    case '<':
@@ -356,7 +356,7 @@ ascii diagram tag
 		});
 		break;
 	      default:
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+		texts.push({body: c, x: 2 * x, y: 2 * y});
 	      }
 	      break;
 	    case '^':
@@ -372,7 +372,7 @@ ascii diagram tag
 		});
 		break;
 	      default:
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+		texts.push({body: c, x: 2 * x, y: 2 * y});
 	      }
 	      break;
 	    case 'v':
@@ -388,11 +388,11 @@ ascii diagram tag
 		});
 		break;
 	      default:
-		chars.push({c: c, x: 2 * x, y: 2 * y});
+		texts.push({body: c, x: 2 * x, y: 2 * y});
 	      }
 	      break;
 	    default:
-	      chars.push({c: c, x: 2 * x, y: 2 * y});
+	      texts.push({body: c, x: 2 * x, y: 2 * y});
 	    }
 	  });
 	});
@@ -400,9 +400,9 @@ ascii diagram tag
 	dst.style.height = 8 * cells.length + 'px';
 	dst.style.width = 8 * cells[0].length + 'px';
 
-	console.log('before combine: ' + lines.length);
-	var lines = combine(lines);
-	console.log('after combine: ' + lines.length);
+	console.log('before line combine: ' + lines.length);
+	var lines = combineLines(lines);
+	console.log('after line combine: ' + lines.length);
 
 	lines.forEach(function(line, i) {
 	  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -425,16 +425,20 @@ ascii diagram tag
 	  dst.appendChild(path);
 	});
 
-	chars.forEach(function(c, i) {
-	  var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+	console.log('before text combine: ' + texts.length);
+	var texts = combineTexts(texts);
+	console.log('after text combine: ' + texts.length);
 
-	  text.setAttributeNS(null, 'x', 4 * c.x);
-	  text.setAttributeNS(null, 'y', 4 * c.y + 8);
-	  text.setAttributeNS(null, 'font-family', 'monospace');
-	  text.setAttributeNS(null, 'font-size', 14);
-	  text.textContent = c.c;
+	texts.forEach(function(text, i) {
+	  var node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 
-	  dst.appendChild(text);
+	  node.setAttributeNS(null, 'x', 4 * text.x);
+	  node.setAttributeNS(null, 'y', 4 * text.y + 8);
+	  node.setAttributeNS(null, 'font-family', 'monospace');
+	  node.setAttributeNS(null, 'font-size', 14);
+	  node.textContent = text.body;
+
+	  dst.appendChild(node);
 	});
       },
       
@@ -474,7 +478,7 @@ ascii diagram tag
 	.replace(/&gt;/g,">")
     }
 
-    function combine(lines) {
+    function combineLines(lines) {
       var heads = {};
       var tails = {};
 
@@ -553,6 +557,33 @@ ascii diagram tag
       });
 
       return lines.filter(function(x, i, self) {
+	return self.indexOf(x) === i;
+      });
+    }
+
+    function combineTexts(texts) {
+      var index = {};
+
+      function key(x, y) {
+	return [x, y].join(':');
+      }
+      
+      texts.forEach(function(text) {
+	var left = index[key(text.x - 2, text.y)];
+	if (!left) {
+	  index[key(text.x, text.y)] = text;
+	  return;
+	}
+	left.body = left.body + text.body;
+	index[key(text.x, text.y)] = left;
+      });
+
+      var texts = [];
+      Object.keys(index).forEach(function(key) {
+	texts.push(index[key]);
+      });
+      
+      return texts.filter(function(x, i, self) {
 	return self.indexOf(x) === i;
       });
     }
