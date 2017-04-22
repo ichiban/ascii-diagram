@@ -400,10 +400,7 @@ ascii diagram tag
 	dst.style.height = 8 * cells.length + 'px';
 	dst.style.width = 8 * cells[0].length + 'px';
 
-	console.log('before line combine: ' + lines.length);
 	var lines = combineLines(lines);
-	console.log('after line combine: ' + lines.length);
-
 	lines.forEach(function(line, i) {
 	  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
@@ -425,10 +422,7 @@ ascii diagram tag
 	  dst.appendChild(path);
 	});
 
-	console.log('before text combine: ' + texts.length);
 	var texts = combineTexts(texts);
-	console.log('after text combine: ' + texts.length);
-
 	texts.forEach(function(text, i) {
 	  var node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 
@@ -486,62 +480,70 @@ ascii diagram tag
 	return [point.x, point.y].join(':');
       };
 
+      function put(index, key, line) {
+	if (!index[key]) {
+	  index[key] = [line];
+	  return;
+	}
+
+	index[key].push(line);
+      }
+
+      function append(line) {
+	var headKey = key(line.points[0]);
+	var tailKey = key(line.points[line.points.length - 1]);
+	
+	var tail = (tails[headKey] || []).shift();
+	if (!tail) {
+	  return false;
+	}
+
+	var points = line.points.slice();
+	points.shift();
+	tail.points = tail.points.concat(points);
+	tail.markerEnd = line.markerEnd;
+	
+	put(tails, tailKey, tail);
+	return true;
+      }
+
+      function prepend(line) {
+	var headKey = key(line.points[0]);
+	var tailKey = key(line.points[line.points.length - 1]);
+
+	var head = (heads[tailKey] || []).shift();
+	if (!head) {
+	  return false;
+	}
+
+	var points = line.points.slice();
+	points.pop();
+	head.points = points.concat(head.points);
+	head.markerEnd = line.markerEnd;
+	
+	put(heads, headKey, head);
+	return true;
+      }
+
       lines.forEach(function(line, i) {
-	var points = line.points;
-	var markerEnd = line.markerEnd;
-	var headKey = key(points[0]);
-	var tailKey = key(points[points.length - 1]);
+	var headKey = key(line.points[0]);
+	var tailKey = key(line.points[line.points.length - 1]);
 
-	var lines = tails[headKey] || [];
-	var line = lines[0];
-	if (!!line) {
-	  lines.shift();
-	  for (var i = 1; i < points.length; i++) {
-	    line.points.push(points[i]);
-	  }
-	  if (!!markerEnd) {
-	    line.markerEnd = markerEnd;
-	  }
-	  if (!!tails[tailKey]) {
-	    tails[tailKey].push(line);
-	  } else {
-	    tails[tailKey] = [line];
-	  }
+	if (append(line) || prepend(line)) {
 	  return;
 	}
 
-	var lines = heads[tailKey] || [];
-	var line = lines[0];
-	if (!!line) {
-	  lines.shift();
-	  for (var i = 0; i < points.length - 1; i++) {
-	    line.unshift(points[i]);
+	if (!line.markerEnd) {
+	  var rev = {
+	    points: line.points.slice().reverse(),
 	  }
-	  if (!!markerEnd) {
-	    line.markerEnd = markerEnd;
+	  if (append(rev) || prepend(rev)) {
+	    return;
 	  }
-	  if (!!heads[headKey]) {
-	    heads[headKey].push(line);
-	  } else {
-	    heads[headKey] = [line];
-	  }
-	  return;
 	}
 
-	var line = {
-	  points: points,
-	  markerEnd: markerEnd
-	};
-	if (!!heads[headKey]) {
-	  heads[headKey].push(line);
-	} else {
-	  heads[headKey] = [line];
-	}
-	if (!!tails[tailKey]) {
-	  tails[tailKey].push(line);
-	} else {
-	  tails[tailKey] = [line];
-	}
+	put(heads, headKey, line);
+	put(tails, tailKey, line);
       });
 
       var lines = [];
