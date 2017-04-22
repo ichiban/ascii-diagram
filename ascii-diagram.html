@@ -501,7 +501,9 @@ ascii diagram tag
 	var points = line.points.slice();
 	points.shift();
 	tail.points = tail.points.concat(points);
-	tail.markerEnd = line.markerEnd;
+	if (!!line.markerEnd) {
+	  tail.markerEnd = line.markerEnd;
+	}
 	
 	put(tails, tailKey, tail);
 	return true;
@@ -519,7 +521,9 @@ ascii diagram tag
 	var points = line.points.slice();
 	points.pop();
 	head.points = points.concat(head.points);
-	head.markerEnd = line.markerEnd;
+	if (!!line.markerEnd) {
+	  head.markerEnd = line.markerEnd;
+	}
 	
 	put(heads, headKey, head);
 	return true;
